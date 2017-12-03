@@ -1,0 +1,47 @@
+{
+  "name": "trek",
+  "description": "trek",
+  "version": "1.0.0",
+  "author": "Abe Clark",
+  "dependencies": {
+    "@turf/along": "^5.0.4",
+    "@turf/length": "^5.0.4",
+    "@turf/turf": "^5.0.4",
+    "axios": "^0.16.2",
+    "babel-plugin-module-alias": "^1.6.0",
+    "firebase": "^4.3.0",
+    "gatsby": "^1.6.5",
+    "gatsby-link": "^1.6.5",
+    "gatsby-plugin-glamor": "^1.6.3",
+    "gatsby-plugin-google-analytics": "^1.0.3",
+    "gatsby-plugin-jss": "^1.5.6",
+    "gatsby-plugin-react-helmet": "^1.0.1",
+    "gatsby-source-filesystem": "^1.4.2",
+    "gatsby-transformer-remark": "^1.7.0",
+    "google-map-react": "^0.25.0",
+    "js-cookie": "^2.1.4",
+    "parse-filepath": "^1.0.1",
+    "query-string": "^5.0.0",
+    "react-addons-css-transition-group": "^15.6.2",
+    "react-dom": "^15.6.1",
+    "react-emoji-render": "^0.4.3",
+    "react-firebaseui": "^1.0.10",
+    "react-icons": "^2.2.5",
+    "react-infinite-calendar": "^2.3.1"
+  },
+  "keywords": [
+    "gatsby"
+  ],
+  "license": "MIT",
+  "main": "n/a",
+  "scripts": {
+    "build": "gatsby build",
+    "develop": "gatsby develop",
+    "format": "prettier --trailing-comma es5 --no-semi --single-quote --write 'src/**/*.js'",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "storybook": "start-storybook -p 9001 -c .storybook"
+  },
+  "devDependencies": {
+    "prettier": "^1.5.2"
+  }
+}
