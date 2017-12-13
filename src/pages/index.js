@@ -25,7 +25,7 @@ const styles = {
     justifyContent: 'center',
     position: 'absolute',
     right: '20px',
-    bottom: '40px',
+    bottom: '70px',
   },
   settingsButton: {
     cursor: 'pointer',
@@ -39,6 +39,8 @@ const styles = {
     top: '20px',
   }
 }
+
+const ASSUMED_LENGTH = 3600
 
 const options = {units: 'miles'}
 
@@ -82,7 +84,7 @@ class IndexPage extends React.Component {
         if (snapshot.val()) {
           snapshot.forEach(childSnapshot => {
             const val = childSnapshot.val()
-            mileageDone += val.miles
+            mileageDone += parseFloat(val.miles)
             activities.push(val) 
           })
         }
@@ -95,7 +97,8 @@ class IndexPage extends React.Component {
   }
 
   placeBoat(map, maps) {
-    const currentDistance = this.state.mileageDone
+    // coerce our assumed mileage into real mileage
+    const currentDistance = this.state.mileageDone / ASSUMED_LENGTH * this.state.lineLength
     const position = along(this.state.line, currentDistance, options)
     const latLng = { lat: position.geometry.coordinates[0], lng: position.geometry.coordinates[1] }
     const marker = new maps.Marker({
@@ -171,7 +174,7 @@ class IndexPage extends React.Component {
           >
           </GoogleMapReact>
           <Pioneer
-            style={{ position: 'absolute', bottom: '40px', left: '20px' }}
+            style={{ position: 'absolute', bottom: '60px', left: '20px' }}
             gender={this.state.gender}
             emoji=":smile:"
           />
@@ -181,10 +184,14 @@ class IndexPage extends React.Component {
           <div css={styles.settingsButton} onClick={() => navigateTo('/profile')}>
             <MdSettings size={40} color={colors.green}/>
           </div>
-          <div css={{zIndex: 10, position: 'absolute', bottom: 0, left: 0, right: 0, height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.green}}>
-            You have sailed {Math.round(this.state.mileageDone)} of {Math.round(this.state.lineLength)} miles ({Math.round(this.state.mileageDone/this.state.lineLength * 100)}%)
+          <div css={{paddingBottom: '20px', zIndex: 10, position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.green}}>
+            You have sailed {Math.round(this.state.mileageDone)} of {ASSUMED_LENGTH} miles ({Math.round(this.state.mileageDone/ASSUMED_LENGTH * 100)}%)
           </div>
         </Hero>
+        <h1 css={{ textAlign: 'center'}}>My Activity Log</h1>
+        {!this.state.activities || !this.state.activities.length &&
+          <p css={{ textAlign: 'center'}}>Add an activity by pressing the plus icon!</p>
+        }
         <ActivityLog activities={this.state.activities}/>
       </div>
     )

@@ -6,6 +6,7 @@ import Hero from 'components/base/hero'
 import { FaMale, FaFemale } from 'react-icons/lib/fa'
 import Button from 'components/base/button'
 import { db, firebaseAuth } from 'config/firebase'
+import { Activity } from 'components/base/activityLog'
 
 const styles = {
   outer: {
@@ -22,6 +23,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
+    alignSelf: 'stretch',
   },
   inputGroup: {
     marginBottom: '20px',
@@ -34,7 +36,7 @@ const styles = {
   }
 }
 
-class Activity extends React.Component {
+class Activities extends React.Component {
   constructor() {
     super()
     this.state = {
@@ -42,6 +44,7 @@ class Activity extends React.Component {
       date: new Date(),
       user: null,
       variable: null,
+      activities: {},
     }
     this.onSubmit = this.onSubmit.bind(this)
   }
@@ -49,37 +52,61 @@ class Activity extends React.Component {
   componentDidMount() {
     firebaseAuth().onAuthStateChanged(user => {
       this.setState({ user })
+      db.ref(`activities/${user.uid}`).on('value', snapshot => {
+        if (snapshot.val()) {
+          this.setState({
+            activities: snapshot.val(),
+          })
+        }
+      })
     })
     db.ref(`options`).once('value')
     .then(snapshot => {
       if (snapshot.val()) {
         this.setState({
           options: snapshot.val(),
-          variable: snapshot.val()[0].variable
         })
       }
     })
+
   }
 
-  onSubmit() {
+  onSubmit(activity) {
+    console.log(activity)
     const user = this.state.user
-    const selectedOption = this.state.options.find(el => el.variable === this.state.variable)
     db.ref(`activities/${user.uid}`).push({
-      variable: this.state.variable,
-      miles: selectedOption.miles,
-      display: selectedOption.display,
+      ...activity,
       date: this.state.date.getTime(),
     })
     navigateTo('/')
   }
 
   render() {
-    if (!this.state.options) {
-      return <div>Loading</div>
-    }
-    console.log(this.state)
-    const optionElements = this.state.options.map(option =>
-      <option value={option.variable}>{option.display}</option>
+    const activitiesData = []
+    const options = this.state.options || {}
+    const doneActivities = this.state.activities || {}
+    Object.keys(options).forEach(key => {
+      if (options[key].onlyOnce) {
+        // if it is an onlyOnce activity, we want to be sure it's not already done
+        let alreadyDone = false
+        Object.keys(doneActivities).forEach(key1 => {
+          console.log(doneActivities[key1])
+          if (doneActivities[key1].id === key) {
+            alreadyDone = true
+          }
+        })
+        if (!alreadyDone) {
+          activitiesData.push({...options[key], id: key})
+        }
+      } else {
+        activitiesData.push({...options[key], id: key})
+      }
+    })
+
+    const activityElements = activitiesData.map(activity =>
+      <div css={{cursor: 'pointer', width: '100%', maxWidth: '400px'}} onClick={() => this.onSubmit(activity)}>
+        <Activity {...activity} />
+      </div>
     )
     return (
       <div css={{ display: 'flex', flex: 1, flexDirection: 'column'}}>
@@ -87,20 +114,7 @@ class Activity extends React.Component {
           <div css={styles.outer}>
             <div css={styles.inner}>
               <div css={styles.inputGroup}>
-                <p>Activity Type</p>
-                <select
-                  css={styles.input}
-                  value={this.state.variable}
-                  onChange={e => this.setState({ 
-                    variable: e.target.value,
-                  })}
-                  autoFocus
-                >
-                  {optionElements}
-                </select>
-              </div>
-              <div css={styles.inputGroup}>
-                <p>Date</p>
+                <p>Choose the Date of the Activity</p>
                 <input
                   css={styles.input}
                   type="date"
@@ -108,12 +122,8 @@ class Activity extends React.Component {
                   value={this.state.date.toISOString().substring(0, 10)}
                 />
               </div>
-              <Button
-                style={{marginTop: '20px'}}
-                onClick={this.onSubmit}
-              >
-                Add Activity
-              </Button>
+              <p>Choose the Activity</p>
+              {activityElements}
             </div>
           </div>
         </Hero>
@@ -122,4 +132,4 @@ class Activity extends React.Component {
   }
 }
 
-export default Activity
+export default Activities

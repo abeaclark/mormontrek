@@ -56,6 +56,7 @@ class Profile extends React.Component {
             firstName: snapshot.val().firstName,
             lastName: snapshot.val().lastName,
             gender: snapshot.val().gender,
+            isAdmin: snapshot.val().isAdmin,
           })
         }
       })
@@ -78,7 +79,6 @@ class Profile extends React.Component {
     }
 
     const formIsValid = this.state.firstName && this.state.lastName && this.state.gender
-    console.log(this.state)
     return (
       <div css={{ display: 'flex', flex: 1, flexDirection: 'column'}}>
         <Hero backgroundColor={colors.darkBlue} >
@@ -124,6 +124,11 @@ class Profile extends React.Component {
               >
                 Submit
               </Button>
+              {this.state.isAdmin &&
+                <Link to="/admin" style={{marginTop: '20px'}} >
+                  View Admin Panel
+                </Link>
+              }
             </div>
           </div>
         </Hero>
