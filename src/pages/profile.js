@@ -53,6 +53,11 @@ class Profile extends React.Component {
       this.setState({ user })
       db.ref(`users/${user.uid}`).once('value')
       .then(snapshot => {
+        if (snapshot.val() && snapshot.val().firstName) {
+          // user is logging in, take them to dashboard
+          document.location.href="/"
+          return
+        }
         if (snapshot.val()) {
           this.setState({
             firstName: snapshot.val().firstName,
