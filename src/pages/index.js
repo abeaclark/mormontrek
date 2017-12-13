@@ -12,6 +12,8 @@ import along from '@turf/along'
 import turfLength from '@turf/length'
 import boat from 'media/boat.png'
 import { db, firebaseAuth } from 'config/firebase'
+import Loading from 'components/base/loading'
+
 const GOOGLE_MAPS_KEY = 'AIzaSyBkoQIfUFZ7jU9PVfC3nD0jmCZUwUz9rfk'
 
 const styles = {
@@ -81,16 +83,24 @@ class IndexPage extends React.Component {
       })
       db.ref(`activities/${user.uid}`).orderByChild("date").on('value', snapshot => {
         let mileageDone = 0
+        let scripturesReadCount = 0
+        let oneWeekAgo = new Date()
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+        oneWeekAgo = oneWeekAgo.getTime()
         if (snapshot.val()) {
           snapshot.forEach(childSnapshot => {
             const val = childSnapshot.val()
             mileageDone += parseFloat(val.miles)
-            activities.push(val) 
+            activities.push(val)
+            if(val.date > oneWeekAgo && /scripture/gi.test(val.title)) {
+              scripturesReadCount += 1
+            }
           })
         }
         this.setState({
           activities,
           mileageDone,
+          scripturesReadCount
         })
       })
     })
@@ -136,9 +146,9 @@ class IndexPage extends React.Component {
   };
   render() {
     if (!this.state.user) {
-      return <div>Loading</div>
+      return <Loading />
     }
-    console.log(this.state.user)
+    console.log(this.state)
 
     const createMapOptions = maps => {
       let zl = 2
@@ -176,7 +186,7 @@ class IndexPage extends React.Component {
           <Pioneer
             style={{ position: 'absolute', bottom: '60px', left: '20px' }}
             gender={this.state.gender}
-            emoji=":smile:"
+            scripturesReadCount={this.state.scripturesReadCount}
           />
           <div css={styles.addButton} onClick={() => navigateTo('/activity')}>
             <MdAdd size={30} color="white"/>

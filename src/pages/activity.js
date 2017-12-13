@@ -72,7 +72,6 @@ class Activities extends React.Component {
   }
 
   onSubmit(activity) {
-    console.log(activity)
     const user = this.state.user
     db.ref(`activities/${user.uid}`).push({
       ...activity,

@@ -8,6 +8,7 @@ import Button from 'components/base/button'
 import { db, firebaseAuth } from 'config/firebase'
 import ReactTable from "react-table";
 import "react-table/react-table.css";
+import Loading from 'components/base/loading'
 
 const styles = {
   outer: {
@@ -105,11 +106,7 @@ class Admin extends React.Component {
 
   render() {
     if (!this.state.isAdmin) {
-      return (
-        <div css={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <h1>Loading...</h1>
-        </div>
-      )
+      return <Loading />
     }
     const usersData = []
     const users = this.state.users || {}
@@ -287,10 +284,15 @@ const Users = ({ usersData }) => (
             accessor: "gender"
           },
           {
+            Header: "Phone Number",
+            accessor: "phoneNumber"
+          },
+          {
             Header: "Admin",
             id: 'isAdmin',
             accessor: d => d.isAdmin ? 'true' : 'false',
           },
+
         ]
       },
     ]}

@@ -1,6 +1,5 @@
 import React from 'react'
 import { applicationStyles } from 'themes'
-import { CircularProgress } from 'material-ui/Progress'
 import { colors } from 'themes'
 
 const styles = {
@@ -16,7 +15,7 @@ const styles = {
 
 const Loading = ({ style={} }) =>
   <div css={{...styles.outer, ...style }}>
-     <CircularProgress color={colors.green} />
+     Loading...
   </div>
 
 export default Loading

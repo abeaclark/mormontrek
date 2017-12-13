@@ -6,6 +6,7 @@ import Hero from 'components/base/hero'
 import { FaMale, FaFemale } from 'react-icons/lib/fa';
 import Button from 'components/base/button'
 import { db, firebaseAuth } from 'config/firebase'
+import Loading from 'components/base/loading'
 
 const styles = {
   outer: {
@@ -42,6 +43,7 @@ class Profile extends React.Component {
       firstName: '',
       lastName: '',
       gender: null,
+      isAdmin: false,
     }
     this.onSubmit = this.onSubmit.bind(this)
   }
@@ -57,6 +59,7 @@ class Profile extends React.Component {
             lastName: snapshot.val().lastName,
             gender: snapshot.val().gender,
             isAdmin: snapshot.val().isAdmin,
+            phoneNumber: user.phoneNumber,
           })
         }
       })
@@ -69,13 +72,15 @@ class Profile extends React.Component {
       firstName: this.state.firstName,
       lastName: this.state.lastName,
       gender: this.state.gender,
+      isAdmin: this.state.isAdmin,
+      phoneNumber: this.state.phoneNumber,
     })
     navigateTo('/')
   }
 
   render() {
     if (!this.state.user) {
-      return <div>Loading</div>
+      return <Loading />
     }
 
     const formIsValid = this.state.firstName && this.state.lastName && this.state.gender
