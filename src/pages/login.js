@@ -13,7 +13,7 @@ const styles = {
 class IndexPage extends React.Component {
   render() {
     var uiConfig = {
-      signInSuccessUrl: '/profile',
+      signInSuccessUrl: '/',
       signInOptions: [
         firebase.auth.PhoneAuthProvider.PROVIDER_ID
       ],

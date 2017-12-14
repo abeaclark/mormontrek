@@ -51,20 +51,16 @@ class Profile extends React.Component {
   componentDidMount() {
     firebaseAuth().onAuthStateChanged(user => {
       this.setState({ user })
+      console.log(user)
       db.ref(`users/${user.uid}`).once('value')
       .then(snapshot => {
-        if (snapshot.val() && snapshot.val().firstName) {
-          // user is logging in, take them to dashboard
-          document.location.href="/"
-          return
-        }
         if (snapshot.val()) {
           this.setState({
+            user: user,
             firstName: snapshot.val().firstName,
             lastName: snapshot.val().lastName,
             gender: snapshot.val().gender,
             isAdmin: snapshot.val().isAdmin,
-            phoneNumber: user.phoneNumber,
           })
         }
       })
@@ -78,7 +74,7 @@ class Profile extends React.Component {
       lastName: this.state.lastName,
       gender: this.state.gender,
       isAdmin: this.state.isAdmin,
-      phoneNumber: this.state.phoneNumber,
+      phoneNumber: this.state.user.phoneNumber,
     })
     navigateTo('/')
   }

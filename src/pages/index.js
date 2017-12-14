@@ -76,6 +76,10 @@ class IndexPage extends React.Component {
       const activities = []
       db.ref(`users/${user.uid}`).on('value', snapshot => {
         if (snapshot.val()) {
+          if (!snapshot.val().gender) {
+            // re-route them to profile if not complete
+            document.href = '/'
+          }
           this.setState({
             gender: snapshot.val().gender,
           })
@@ -145,7 +149,7 @@ class IndexPage extends React.Component {
     zoom: 2,
   };
   render() {
-    if (!this.state.user) {
+    if (!this.state.user || !this.state.gender) {
       return <Loading />
     }
     console.log(this.state)
