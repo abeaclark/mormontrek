@@ -78,7 +78,7 @@ class IndexPage extends React.Component {
         if (snapshot.val()) {
           if (!snapshot.val().gender) {
             // re-route them to profile if not complete
-            document.href = '/'
+            document.href = '/profile'
           }
           this.setState({
             gender: snapshot.val().gender,
