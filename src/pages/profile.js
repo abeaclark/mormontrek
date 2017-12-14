@@ -48,6 +48,14 @@ class Profile extends React.Component {
     this.onSubmit = this.onSubmit.bind(this)
   }
 
+  logout() {
+    firebaseAuth().signOut().then(function() {
+      document.href = '/login'
+    }, function(error) {
+      console.log(error)
+    });
+  }
+
   componentDidMount() {
     firebaseAuth().onAuthStateChanged(user => {
       this.setState({ user })
@@ -135,6 +143,9 @@ class Profile extends React.Component {
                   View Admin Panel
                 </Link>
               }
+              <div css={{marginTop: 20, cursor: 'pointer'}} onClick={this.logout}>
+                Logout
+              </div>
             </div>
           </div>
         </Hero>

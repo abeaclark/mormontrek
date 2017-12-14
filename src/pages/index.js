@@ -72,14 +72,18 @@ class IndexPage extends React.Component {
 
   componentDidMount() {
     firebaseAuth().onAuthStateChanged(user => {
+      if (!user) {
+        window.location = '/login'
+        return
+      }
       this.setState({ user })
       const activities = []
       db.ref(`users/${user.uid}`).on('value', snapshot => {
+        if(!snapshot.exists()){
+          // re-route them to profile if not complete
+          window.location = '/profile'
+        }
         if (snapshot.val()) {
-          if (!snapshot.val().gender) {
-            // re-route them to profile if not complete
-            document.href = '/profile'
-          }
           this.setState({
             gender: snapshot.val().gender,
           })
