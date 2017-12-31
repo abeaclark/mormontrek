@@ -9,6 +9,8 @@ import { db, firebaseAuth } from 'config/firebase'
 import ReactTable from "react-table";
 import "react-table/react-table.css";
 import Loading from 'components/base/loading'
+import Modal from 'components/base/modal'
+import ActivityLog from 'components/base/activityLog'
 
 const styles = {
   outer: {
@@ -33,23 +35,60 @@ const styles = {
   },
 }
 
+const sumActivities = (activities={}) => {
+  let mileageDone = 0
+  let totalActivitiesDone = 0
+  let scripturesReadCountLastWeek = 0
+  let mileageDoneLastWeek = 0
+  let oneWeekAgo = new Date()
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+  oneWeekAgo = oneWeekAgo.getTime()
+  Object.values(activities).forEach(activity => {
+    const miles = parseFloat(activity.miles)
+    totalActivitiesDone += 1
+    mileageDone += miles
+    if(activity.date > oneWeekAgo) {
+      if (/scripture/gi.test(activity.title)) {
+        scripturesReadCountLastWeek += 1
+      }
+      mileageDoneLastWeek += miles
+    }
+  })
+  return {
+    mileageDone,
+    mileageDoneLastWeek,
+    totalActivitiesDone,
+    scripturesReadCountLastWeek,
+  }
+}
+
+const getActivityDetails = (id, allActivities) => {
+  const activities = allActivities[id]
+  return sumActivities(activities)
+}
+
 class Admin extends React.Component {
   constructor() {
     super()
     this.state = {
-      currentView: 'users',
+      currentView: 'activities',
       options: null,
       users: null,
+      allActivities: {},
+      modalId: null,
     }
     this.showView = this.showView.bind(this)
     this.addActivity = this.addActivity.bind(this)
     this.updateActivity = this.updateActivity.bind(this)
     this.deleteActivity = this.deleteActivity.bind(this)
+    this.onUserClick = this.onUserClick.bind(this)
+    this.closeModal = this.closeModal.bind(this)
   }
 
   componentDidMount() {
     firebaseAuth().onAuthStateChanged(user => {
       this.setState({ user })
+      const allActivities = {}
       db.ref(`users/${user.uid}`).on('value', snapshot => {
         if (snapshot.val()) {
           if (snapshot.val().isAdmin) {
@@ -66,8 +105,21 @@ class Admin extends React.Component {
       db.ref('users').once('value')
       .then(snapshot => {
         if (snapshot.val()) {
+          const users = snapshot.val()
+
+          Object.keys(users).forEach(key => {
+            console.log('wow')
+            db.ref(`activities/${key}`).once('value')
+            .then(snapshot => {
+              if (snapshot.val()) {
+                allActivities[key] = snapshot.val()
+              }
+            })
+          })
+
           this.setState({
-            users: snapshot.val()
+            users,
+            allActivities,
           })
         }
       })
@@ -104,19 +156,34 @@ class Admin extends React.Component {
     db.ref(`options`).child(id).remove()
   }
 
+  onUserClick(id) {
+    this.setState({ modalId: id })
+  }
+
+  closeModal(id) {
+    this.setState({ modalId: null })
+  }
+
   render() {
     if (!this.state.isAdmin) {
       return <Loading />
     }
     const usersData = []
     const users = this.state.users || {}
+    const allActivities = this.state.allActivities || {}
+    const modalId = this.state.modalId
+    let modalActivities = []
     Object.keys(users).forEach(function(key) {
-        usersData.push({...users[key], id: key})
+      const activityDetails = getActivityDetails(key, allActivities)
+      usersData.push({...users[key], id: key, activityDetails})
+      if (modalId === key) {
+        modalActivities = Object.values(allActivities[key])
+      }
     });
     const activitiesData = []
     const options = this.state.options || {}
     Object.keys(options).forEach(function(key) {
-        activitiesData.push({...options[key], id: key})
+      activitiesData.push({...options[key], id: key})
     });
     activitiesData.reverse()
 
@@ -139,7 +206,7 @@ class Admin extends React.Component {
             </Button>
           </div>
           {this.state.currentView === 'users' &&
-            <Users usersData={usersData}/>
+            <Users usersData={usersData} onClick={this.onUserClick}/>
           }
           {this.state.currentView === 'activities' &&
             <div>
@@ -158,6 +225,12 @@ class Admin extends React.Component {
             </div>
           }
         </div>
+        <Modal
+          isOpen={this.state.modalId}
+          onClose={this.closeModal}
+        >
+          <ActivityLog  activities={modalActivities}/>
+        </Modal>
       </div>
     )
   }
@@ -259,46 +332,69 @@ const Activities = ({ activitiesData, deleteActivity, updateActivity }) => (
   </div>
 )
 
-const Users = ({ usersData }) => (
-  <ReactTable
-    data={usersData}
-    columns={[
-      {
-        Header: "Name",
-        columns: [
-          {
-            Header: "First Name",
-            accessor: "firstName"
-          },
-          {
-            Header: "Last Name",
-            accessor: "lastName"
-          }
-        ]
-      },
-      {
-        Header: "Info",
-        columns: [
-          {
-            Header: "Gender",
-            accessor: "gender"
-          },
-          {
-            Header: "Phone Number",
-            accessor: "phoneNumber"
-          },
-          {
-            Header: "Admin",
-            id: 'isAdmin',
-            accessor: d => d.isAdmin ? 'true' : 'false',
-          },
-
-        ]
-      },
-    ]}
-    defaultPageSize={10}
-    className="-striped -highlight"
-  />
-)
+const Users = ({ usersData, onClick }) => {
+  return (
+    <ReactTable
+      data={usersData}
+      columns={[
+        {
+          Header: "Name",
+          columns: [
+            {
+              Header: "Name",
+              id: "name",
+              accessor: d => <a href="#" onClick={() => onClick(d.id)} >{`${d.firstName} ${d.lastName}`}</a>,
+            },
+          ]
+        },
+        {
+          Header: "Info",
+          columns: [
+            {
+              Header: "Gender",
+              accessor: "gender"
+            },
+            {
+              Header: "Phone Number",
+              accessor: "phoneNumber"
+            },
+            {
+              Header: "Admin",
+              id: 'isAdmin',
+              accessor: d => d.isAdmin ? 'true' : 'false',
+            },
+          ]
+        },
+        {
+          Header: "Stats",
+          columns: [
+            {
+              Header: "Total Miles",
+              id: "totalMiles",
+              accessor: d => d.activityDetails.mileageDone,
+            },
+            {
+              Header: "Last 7 Days",
+              id: "last7Days",
+              accessor: d => d.activityDetails.mileageDoneLastWeek,
+            },
+            {
+              Header: "Total Activity Count",
+              id: "totalActivityCount",
+              accessor: d => d.activityDetails.totalActivitiesDone,
+            },
+            {
+              Header: "Last 7 Days: Scriptures",
+              id: "scriptureCountLast7Days",
+              accessor: d => d.activityDetails.scripturesReadCountLastWeek,
+            },
+          ]
+        },
+      ]}
+      defaultPageSize={10}
+      className="-striped -highlight"
+    />
+  )
+}
 
 export default Admin
