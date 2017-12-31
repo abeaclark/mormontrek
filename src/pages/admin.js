@@ -43,7 +43,12 @@ const sumActivities = (activities={}) => {
   let oneWeekAgo = new Date()
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
   oneWeekAgo = oneWeekAgo.getTime()
-  Object.values(activities).forEach(activity => {
+
+  const activitiesArray = Object.keys(activities).map(function(key) {
+    return activities[key];
+  });
+
+  activitiesArray.forEach(activity => {
     const miles = parseFloat(activity.miles)
     totalActivitiesDone += 1
     mileageDone += miles
@@ -206,7 +211,9 @@ class Admin extends React.Component {
       const activityDetails = getActivityDetails(key, allActivities)
       usersData.push({...users[key], id: key, activityDetails})
       if (modalId === key) {
-        modalActivities = Object.values(allActivities[key])
+        modalActivities = Object.keys(allActivities[key]).map(function(key1) {
+          return allActivities[key][key1]
+        });
       }
     });
     const activitiesData = []

@@ -212,13 +212,16 @@ class IndexPage extends React.Component {
     }
 
     let unseenUpdate = null
+    const viewedUpdates = this.state.viewedUpdates
+    const viewedUpdatesArray = Object.keys(viewedUpdates).map(function(key) {
+      return viewedUpdates[key];
+    });
 
-    const viewedUpdates = Object.values(this.state.viewedUpdates)
     let updates = this.state.updates
     const updatesArray = []
     const mileageDone = this.state.mileageDone
     Object.keys(updates).forEach(function(key) {
-      if (inArray(viewedUpdates, key)){
+      if (inArray(viewedUpdatesArray, key)){
         // they have already seen it, don't include
       } else if (mileageDone > updates[key].miles){
         // They haven't seen it, show them!
