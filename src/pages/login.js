@@ -23,6 +23,9 @@ class IndexPage extends React.Component {
     return (
       <div css={{ display: 'flex', flex: 1, flexDirection: 'column'}}>
         <Hero backgroundColor={colors.darkBlue} >
+          <p>Murray Little Cottonwood Stake</p>
+          <h1>Youth Pioneer Trek</h1>
+          <h4>Joy in the Journey, Peace In Me</h4>
           <FirebaseUI uiConfig={uiConfig} firebaseAuth={firebase.auth()}/>
         </Hero>
       </div>

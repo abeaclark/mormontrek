@@ -9,35 +9,37 @@ const styles = {
     left: 0,
     right: 0,
     top: 0,
+    zIndex: 10,
   },
   inner: {
     ...applicationStyles.mainTextContainer,
     display: 'flex',
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     flexDirection: 'column',
     textAlign: 'center',
-    minHeight: '100vh',
-    width: '100vw',
   },
 }
 
 
-const Modal = ({ children, isOpen=false, onClose}) =>
-  <div css={{...styles.outer, backgroundColor: 'white', display: isOpen ? 'normal' : 'none', justifyContent: 'flex-start'}}>
-    <div
-      css={{textAlign: 'center', padding: 30, width: '100%' }}
-    >
-      <Button
-        href="#"
-        onClick={onClose}
-      >
-        EXIT
-      </Button>
-    </div>
+const Modal = ({ children, isOpen=false, onClose, closeText="EXIT", buttonBottom=false}) =>
+  <div css={{...styles.outer, backgroundColor: 'white', display: isOpen ? 'normal' : 'none'}}>
     <div css={{...styles.inner}}>
+     {!buttonBottom &&
+        <Button
+          href="#"
+          onClick={onClose}
+        >
+          {closeText}
+        </Button>
+      }
      {children}
+     {buttonBottom &&
+        <Button
+          href="#"
+          onClick={onClose}
+        >
+          {closeText}
+        </Button>
+      }
     </div>
   </div>
 

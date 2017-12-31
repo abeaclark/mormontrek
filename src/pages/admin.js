@@ -81,6 +81,9 @@ class Admin extends React.Component {
     this.addActivity = this.addActivity.bind(this)
     this.updateActivity = this.updateActivity.bind(this)
     this.deleteActivity = this.deleteActivity.bind(this)
+    this.addUpdate = this.addUpdate.bind(this)
+    this.updateUpdate = this.updateUpdate.bind(this)
+    this.deleteUpdate = this.deleteUpdate.bind(this)
     this.onUserClick = this.onUserClick.bind(this)
     this.closeModal = this.closeModal.bind(this)
   }
@@ -131,6 +134,14 @@ class Admin extends React.Component {
           })
         }
       })
+
+      db.ref('updates').on('value', snapshot => {
+        if (snapshot.val()) {
+          this.setState({
+            updates: snapshot.val()
+          })
+        }
+      })
     })
   }
 
@@ -154,6 +165,24 @@ class Admin extends React.Component {
 
   deleteActivity(id) {
     db.ref(`options`).child(id).remove()
+  }
+
+  addUpdate(data) {
+    const { title, description, miles } = data
+    db.ref(`updates`).push({
+      title,
+      description,
+      miles,
+    })
+  }
+
+  updateUpdate(id, data) {
+    delete data.onlyOnce
+    db.ref(`updates`).child(id).set(data)
+  }
+
+  deleteUpdate(id) {
+    db.ref(`updates`).child(id).remove()
   }
 
   onUserClick(id) {
@@ -187,6 +216,14 @@ class Admin extends React.Component {
     });
     activitiesData.reverse()
 
+    const updatesData = []
+    const updates = this.state.updates || {}
+    Object.keys(updates).forEach(function(key) {
+      updatesData.push({...updates[key], id: key})
+    });
+    console.log(updatesData)
+    updatesData.reverse()
+
     return (
       <div css={{ display: 'flex', flex: 1, flexDirection: 'column', maxWidth: '500px', margin: '0 auto', alignItems: 'center'}}>
         <h1>Admin</h1>
@@ -199,10 +236,16 @@ class Admin extends React.Component {
               Users
             </Button>
             <Button
-              style={{ backgroundColor: this.state.currentView === 'activities' ? colors.mainBlue : colors.grey }}
+              style={{ marginRight: '20px', backgroundColor: this.state.currentView === 'activities' ? colors.mainBlue : colors.grey }}
               onClick={() => this.showView('activities')}
             >
               Activities
+            </Button>
+            <Button
+              style={{ backgroundColor: this.state.currentView === 'updates' ? colors.mainBlue : colors.grey }}
+              onClick={() => this.showView('updates')}
+            >
+              Updates
             </Button>
           </div>
           {this.state.currentView === 'users' &&
@@ -210,6 +253,13 @@ class Admin extends React.Component {
           }
           {this.state.currentView === 'activities' &&
             <div>
+              <p>
+                Activites are the options that users can select to earn miles. The "Once Only" checkbox
+                notates activities that will no longer be an option after the user has done it once (For example, they can only attend the kickoff fireside once).
+              </p>
+              <p>
+                Any changes here will be available to all users effective immediately.
+              </p>
               <h1>Add Activity</h1>
               <Activity addActivity={this.addActivity} />  
             </div>
@@ -224,12 +274,36 @@ class Admin extends React.Component {
               />
             </div>
           }
+          {this.state.currentView === 'updates' &&
+            <div>
+              <p>
+                Updates are messages that you want to be displayed to users when they hit certain mile markers.
+              </p>
+              <p>
+                If you enter a number in the miles field, the update will be displayed when the user hits that mileage.
+                If you select 0 for mileage, then the user will see the message the next time they log in.
+              </p>
+              <h1>Add Update</h1>
+              <Activity addActivity={this.addUpdate} isUpdate/>  
+            </div>
+          }
+          {this.state.currentView === 'updates' &&
+            <div>
+              <h1>Current Updates</h1>
+              <Activities
+                deleteActivity={this.deleteUpdate}
+                updateActivity={this.updateUpdate}
+                activitiesData={updatesData}
+                isUpdate
+              />
+            </div>
+          }
         </div>
         <Modal
           isOpen={this.state.modalId}
           onClose={this.closeModal}
         >
-          <ActivityLog  activities={modalActivities}/>
+          <ActivityLog activities={modalActivities}/>
         </Modal>
       </div>
     )
@@ -274,19 +348,23 @@ class Activity extends React.Component {
           onChange={e => this.setState({ description: e.target.value })}
           css={styles.input}
         />
-        <span>Miles</span>
+        <span>{this.props.isUpdate ? 'Show update when user reaches this mileage' : 'Miles User earns for completion'}</span>
         <input
           type="number"
           value={this.state.miles}
           onChange={e => this.setState({ miles: e.target.value })}
           css={styles.input}/>
-        <input
-          type="checkbox"
-          checked={this.state.onlyOnce}
-          css={{marginRight: '10px'}}
-          onChange={e => this.setState({ onlyOnce: !this.state.onlyOnce })}
-        />
-        <span>Once Only?</span>
+        {!this.props.isUpdate &&
+          <div>
+            <input
+              type="checkbox"
+              checked={this.state.onlyOnce}
+              css={{marginRight: '10px'}}
+              onChange={e => this.setState({ onlyOnce: !this.state.onlyOnce })}
+            />
+            <span>Once Only?</span>
+          </div>
+        }
         <span css={{ display: 'flex', alignSelf: 'stretch', justifyContent: 'flex-end'}}>
           { this.props.addActivity &&
             <Button
@@ -319,7 +397,7 @@ class Activity extends React.Component {
 }
 }
 
-const Activities = ({ activitiesData, deleteActivity, updateActivity }) => (
+const Activities = ({ activitiesData, deleteActivity, updateActivity, isUpdate=null }) => (
   <div>
     {activitiesData.map(activity => (
       <Activity 
@@ -327,6 +405,7 @@ const Activities = ({ activitiesData, deleteActivity, updateActivity }) => (
         deleteActivity={deleteActivity}
         updateActivity={updateActivity}
         key={activity.id}
+        isUpdate={isUpdate}
       />
     ))}
   </div>

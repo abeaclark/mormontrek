@@ -13,6 +13,8 @@ import turfLength from '@turf/length'
 import boat from 'media/boat.png'
 import { db, firebaseAuth } from 'config/firebase'
 import Loading from 'components/base/loading'
+import Modal from 'components/base/modal'
+import Update from 'components/base/update'
 
 const GOOGLE_MAPS_KEY = 'AIzaSyBkoQIfUFZ7jU9PVfC3nD0jmCZUwUz9rfk'
 
@@ -52,6 +54,16 @@ const mainCoordinates = [
   {lat: 30.158514, lng: -89.6543447},
 ]
 
+function inArray(array, id) {
+  for(var i=0;i<array.length;i++) {
+    if (array[i] === id){
+      return true
+    }
+  }
+  return false;
+}
+
+
 // reformat to [[-83, 30], [-84, 36], [-78, 41]] for turf
 const formatCoordinates = coordinates => coordinates.map(coordinate => {
   return [coordinate.lat, coordinate.lng]
@@ -66,8 +78,11 @@ class IndexPage extends React.Component {
       line: null,
       activities: [],
       mileageDone: 0,
+      updates: {},
+      viewedUpdates: {},
     }
     this.drawRoute = this.drawRoute.bind(this)
+    this.exitUpdate = this.exitUpdate.bind(this)
   }
 
   componentDidMount() {
@@ -111,7 +126,28 @@ class IndexPage extends React.Component {
           scripturesReadCount
         })
       })
+
+      db.ref('updates').on('value', snapshot => {
+        if (snapshot.val()) {
+          this.setState({
+            updates: snapshot.val()
+          })
+        }
+      })
+
+      // read receipts of updates for a given user
+      db.ref(`viewedUpdates/${user.uid}`).on('value', snapshot => {
+        if(snapshot.exists()){
+          this.setState({
+            viewedUpdates: snapshot.val(),
+          })
+        }
+      })
     })
+  }
+
+  exitUpdate(id) {
+    db.ref(`viewedUpdates/${this.state.user.uid}`).push(id)
   }
 
   placeBoat(map, maps) {
@@ -156,7 +192,6 @@ class IndexPage extends React.Component {
     if (!this.state.user || !this.state.gender) {
       return <Loading />
     }
-    console.log(this.state)
 
     const createMapOptions = maps => {
       let zl = 2
@@ -175,6 +210,23 @@ class IndexPage extends React.Component {
         styles: [{ stylers: [{ 'saturation': -100 }, { 'gamma': 0.8 }, { 'lightness': 4 }, { 'visibility': 'on' }] }]
       }
     }
+
+    let unseenUpdate = null
+
+    const viewedUpdates = Object.values(this.state.viewedUpdates)
+    let updates = this.state.updates
+    const updatesArray = []
+    const mileageDone = this.state.mileageDone
+    Object.keys(updates).forEach(function(key) {
+      if (inArray(viewedUpdates, key)){
+        // they have already seen it, don't include
+      } else if (mileageDone > updates[key].miles){
+        // They haven't seen it, show them!
+        updatesArray.push({...updates[key], id: key})    
+      }
+    });
+    // Lowest mileage message first
+    updatesArray.sort((a, b) => a.miles - b.miles)
     return (
       <div css={{ display: 'flex', flex: 1, flexDirection: 'column'}}>
         <Hero backgroundColor={colors.darkBlue} style={{width: '100%'}}>
@@ -211,6 +263,16 @@ class IndexPage extends React.Component {
           <p css={{ textAlign: 'center'}}>Add an activity by pressing the plus icon!</p>
         }
         <ActivityLog activities={this.state.activities}/>
+        <Modal
+          isOpen={updatesArray.length && updatesArray[0]}
+          onClose={() => this.exitUpdate(updatesArray[0].id)}
+          closeText="Got it!"
+          buttonBottom
+        >
+          <Update
+            {...updatesArray[0]}
+          />
+        </Modal>
       </div>
     )
   }
