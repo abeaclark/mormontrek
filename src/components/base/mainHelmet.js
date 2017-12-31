@@ -1,23 +1,19 @@
 import React from 'react'
 import Helmet from 'react-helmet'
+import Cover from 'media/trekCoverPhoto.png'
 
-const defaultDescription = "OnCallogy takes care of credentialing, calendaring, and insurance. You'll be surprised at how soon you can start moonlighting on your schedule, hassle-free."
-const defaultTitle = "OnCallogy | Moonlighting Simplified"
-const defaultImage = ''
-const defaultKeywords = 'moonlight, moonlighting, doctor, doctors, call, cover, side hustle, physician'
+const defaultDescription = "Joy in the Journey, Peace in Me. Murray Little Cottonwood Stake Youth Pioneer Trek, 2018"
+const defaultTitle = "Murray Little Conttonwood Stake | Youth Pioneer Trek"
+const defaultImage = Cover
+const defaultKeywords = 'Trek, Murray Little Cottonwood Stake, Youth, Pioneer'
 
 const mainScript={
   "type": "application/ld+json",
   "innerHTML": `{
     "@context": "http://schema.org",
     "@type": "Organization",
-    "name": "OnCallogy",
-    "url": "https://www.oncallogy.com",
-    "sameAs": [
-      "https://www.facebook.com/OnCallogyApp/",
-      "https://www.linkedin.com/company/oncallogy/",
-      "https://twitter.com/oncallogy",
-    ]
+    "name": "Murray Little Cottonwood Stake Youth Pioneer Trek",
+    "url": "https://trek.netlify.com",
   }`
 }
 
