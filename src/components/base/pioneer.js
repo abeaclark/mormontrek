@@ -34,7 +34,7 @@ const Pioneer = ({ gender, scripturesReadCount=0, style={} }) => {
   return (
     <div css={{ ...style, display: 'flex', flexDirection: 'row', fontSize: '10px' }}>
       <div css={{ display: 'flex', flexDirection: 'column' }}>
-        <img src={emoji} style={{ width: '80px', height: '80px', marginBottom: '-20px', marginLeft: '5px', zIndex: 3 }}/>
+        <img src={emoji} style={{ width: '80px', height: '80px', marginBottom: '-20px', marginLeft: gender === 'male' ? '5px' : '15px' , zIndex: 3 }}/>
         <img src={gender === 'male' ? PioneerBoy : PioneerGirl} css={{ height: '150px' }}/>
       </div>
       <div css={{ width: 200, height: 75, position: 'relative', borderRadius: '50%', zIndex: 3, backgroundColor: 'grey', color: 'white', padding: '20px'}}>
