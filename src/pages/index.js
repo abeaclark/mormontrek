@@ -77,6 +77,7 @@ class IndexPage extends React.Component {
       lineLength: null,
       line: null,
       activities: [],
+      totalMileageDone: 0,
       mileageDone: 0,
       updates: {},
       viewedUpdates: {},
@@ -120,9 +121,18 @@ class IndexPage extends React.Component {
             }
           })
         }
+
+        let totalMileageDone = mileageDone
+        let completedTrips = 0
+        if (mileageDone && mileageDone > ASSUMED_LENGTH) {
+          completedTrips = Math.round(mileageDone / ASSUMED_LENGTH)
+          mileageDone = mileageDone - (ASSUMED_LENGTH * completedTrips)
+        }
         this.setState({
           activities,
+          totalMileageDone,
           mileageDone,
+          completedTrips,
           scripturesReadCount
         })
       })
@@ -230,6 +240,7 @@ class IndexPage extends React.Component {
     });
     // Lowest mileage message first
     updatesArray.sort((a, b) => a.miles - b.miles)
+    const secondTrip = this.state.totalMileageDone > ASSUMED_LENGTH
     return (
       <div css={{ display: 'flex', flex: 1, flexDirection: 'column'}}>
         <Hero backgroundColor={colors.darkBlue} style={{width: '100%'}}>
@@ -258,6 +269,9 @@ class IndexPage extends React.Component {
             <MdSettings size={40} color={colors.green}/>
           </div>
           <div css={{paddingBottom: '20px', zIndex: 10, position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.green}}>
+            { secondTrip && `You've already got ${this.state.completedTrips} pioneer${this.state.completedTrips > 1 ? 's': ''} across! Congrats! `}
+            { secondTrip && <br />}
+            { secondTrip && 'Your current trip: '}
             You have sailed {Math.round(this.state.mileageDone)} of {ASSUMED_LENGTH} miles ({Math.round(this.state.mileageDone/ASSUMED_LENGTH * 100)}%)
           </div>
         </Hero>
